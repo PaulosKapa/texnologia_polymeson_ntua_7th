@@ -8,6 +8,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import models.Island;
+import models.Site;
+import models.Unit;
 
 public class Loader {
     public static Island loadMap(String filePath) throws Exception{
@@ -33,38 +35,50 @@ public class Loader {
             int height = json.getInt("height");
             double budget = json.getDouble("budget");
 
-            Island island = new Island(name, width, height, budget, null, null, null);
+            
             JSONArray mapArray = json.getJSONArray("map");
             if(mapArray.length() != height){
                 throw new EOFException("Number of line error");
             }
 
-            ArrayList<String>lines = new ArrayList();
+            ArrayList<String>mapLetters = new ArrayList<String>();
             for(int i = 0; i < mapArray.length(); i++){
                 String l = mapArray.getString(i);
                 if(l.length() != width ){
                     throw new Exception("Map error");
                 }
-                lines.add(l);
+
+                for(int j = 0; j< l.length(); j++){
+                    mapLetters.add(String.valueOf(l.charAt(j)));
+                }
             }
-            //island.setMap(lines);
+            
             JSONArray units = json.getJSONArray("units");
+            ArrayList<Unit> unitObjects = new ArrayList<Unit>();
             for(int i = 0; i<units.length(); i++){
                 JSONObject unit = units.getJSONObject(i);
                 String id = unit.getString("id");
                 String type = unit.getString("type");
                 int x = unit.getInt("x");
                 int y = unit.getInt("y");
+                unitObjects.add(new Unit(id, type, x, y));
             }
-
             JSONArray sites = json.getJSONArray("sites");
+            ArrayList<Site> siteObjects = new ArrayList<Site>();
             for(int i = 0; i<sites.length(); i++){
                 JSONObject site = sites.getJSONObject(i);
                 String id = site.getString("id");
                 int x = site.getInt("x");
                 int y = site.getInt("y");
+                JSONArray allowedArray = site.getJSONArray("allowed");
+                ArrayList<String> allowedItems = new ArrayList<>();
+                for(int j = 0; j<allowedArray.length(); j++){
+                    allowedItems.add(allowedArray.getString(j));
+                }
+                siteObjects.add(new Site(id, x, y, allowedItems));
             }
-            return(island);
+            
+            return(new Island(name, width, height, budget, mapLetters, unitObjects, siteObjects));
         }
         catch(JSONException e){
                 throw new Exception("JSOn file error");

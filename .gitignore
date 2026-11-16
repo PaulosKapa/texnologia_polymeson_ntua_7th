@@ -1,0 +1,3 @@
+*.so*.so
+
+lib/libavplugin-ffmpeg-60.so

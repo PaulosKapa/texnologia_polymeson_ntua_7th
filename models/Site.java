@@ -17,4 +17,11 @@ public class Site {
         this.y = y;
         this.allowed = allowed;
     }
+
+    public int getX(){
+                return x;
+        }
+        public int getY(){
+                return y;
+        }
 }
