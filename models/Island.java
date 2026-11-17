@@ -3,13 +3,13 @@ package models;
 import java.util.ArrayList;
 
 public class Island {
-    public String name;
-    public int width;
-    public int height;
-    public double budget;
-    public ArrayList<String> map;
-    public ArrayList<Unit> units;
-    public ArrayList<Site> sites;
+    String name;
+    int width;
+    int height;
+    double budget;
+    ArrayList<String> map;
+    ArrayList<Unit> units;
+    ArrayList<Site> sites;
     
     public Island(String name,
                   int width,
@@ -27,5 +27,26 @@ public class Island {
         this.units = units;
         this.sites =sites;
 
+    }
+    public String getName(){
+        return name;
+    }
+    public int getWidth(){
+        return width;
+    }
+    public int getHeight(){
+        return height;
+    }
+    public double getBudget(){
+        return budget;
+    }
+    public ArrayList<String> getMap(){
+        return map;
+    }
+    public ArrayList<Unit> getUnits(){
+        return units;
+    }
+    public ArrayList<Site> getSites(){
+        return sites;
     }
 }

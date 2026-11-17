@@ -6,19 +6,33 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
+import models.InventoryTiles;
 import models.Island;
 import models.Tiles;
 import javafx.scene.text.Text;
 import java.io.File;
+
+import actions.Inventory;
+import actions.Loader;
+import actions.Placements;
+import actions.UnitsLoader;
 import javafx.stage.FileChooser;
+
+import models.Item;
 
 public class Main extends Application {
 
     @Override
     public void start(Stage stage) {
-
+        
         Button loadButton = new Button("load");
         Text budget = new Text("0");
+        Text siteChosen = new Text("Site: ");
+        Text itemChosen = new Text("Item: ");
+
+        // ΝΕΟ: Ένα οριζόντιο κουτί για τα αντικείμενα του καταλόγου
+        HBox inventoryBox = new HBox(10); // 10 pixels κενό ανάμεσα στα κουμπιά
+        inventoryBox.setAlignment(Pos.CENTER);
 
 
       // Φτιάχνουμε ένα ξεχωριστό πλέγμα ΜΟΝΟ για τον χάρτη
@@ -28,7 +42,7 @@ public class Main extends Application {
         mapGrid.setHgap(1);
 
         // Περνάμε το mapGrid στη μέθοδο loadFile
-        loadButton.setOnAction(event -> loadFile(stage, budget, mapGrid));
+        loadButton.setOnAction(event -> loadFile(stage, budget, mapGrid, inventoryBox, siteChosen, itemChosen));
 
         // Χρησιμοποιούμε ένα VBox για να βάλουμε τα κουμπιά πάνω και τον χάρτη από κάτω
         VBox root = new VBox(15); 
@@ -36,7 +50,7 @@ public class Main extends Application {
         root.setPadding(new Insets(20));
         
         // Προσθέτουμε τα στοιχεία στο κεντρικό VBox
-        root.getChildren().addAll(loadButton, budget, mapGrid);
+        root.getChildren().addAll(loadButton, budget, mapGrid, inventoryBox, siteChosen, itemChosen);
 
         // Φτιάχνουμε τη Scene ΜΙΑ ΦΟΡΑ εδώ
         Scene scene = new Scene(root, 800, 600);
@@ -46,43 +60,77 @@ public class Main extends Application {
         stage.show();
     }
 
-    private void loadFile(Stage stage, Text budget, GridPane mapGrid) {
+    private void loadFile(Stage stage, Text budget, GridPane mapGrid, HBox inventoryBox, Text siteChosen, Text itemChosen) {
         FileChooser file = new FileChooser();
         File selectFile = file.showOpenDialog(stage);
+        Placements placementManager = new Placements();
+       
 
         if (selectFile != null) {
             try {
+                File inventoryFile = new File(selectFile.getParent(), "catalog.json");
                 Island island = Loader.loadMap(selectFile.getAbsolutePath());
-                budget.setText(String.valueOf(island.budget));
+                Inventory inventory = UnitsLoader.loadUnits(inventoryFile.getAbsolutePath());
+                // Καθαρίζουμε τον κατάλογο σε περίπτωση που φορτώσουμε 2ο αρχείο
+                inventoryBox.getChildren().clear();
+                for(int i =0; i<inventory.getInventory().size();i++){
+                    Item item = inventory.getInventory().get(i);
+                    String color = "black";
+                    
+                    switch (item.getType()) {
+                        
+                        case "PV":
+                            color = "teal";
+                            
+                            break;
+                        case "WIND":
+                            color = "yellow";
+                            break;
+                        case "BATTERY":
+                            color = "red";
+                            break;
+                        default:
+                            break;
+                    }
+                        InventoryTiles inventoryTile = new InventoryTiles(item.getType(), color);
+                        
+                        Button tileButton = inventoryTile.createTile();
+                        tileButton.setOnAction(event->inventoryTile.onInventoryTilePressed(item, itemChosen, placementManager));
+
+                        inventoryBox.getChildren().add(tileButton);
+                    }
+                
+                budget.setText(String.valueOf(island.getBudget()));
                 int index = 0;
-                Tiles[][] tileGrid = new Tiles [island.height][island.width];
-                for (int i = 0; i < island.height; i++) {
-                    for (int j = 0; j < island.width; j++) {
-                        int id = -1;
+                Tiles[][] tileGrid = new Tiles [island.getHeight()][island.getWidth()];
+                
+                for (int i = 0; i < island.getHeight(); i++) {
+                    for (int j = 0; j < island.getWidth(); j++) {
+                        String type = "null";
                         String color = "black";
                         
-                        switch (island.map.get(index)) {
+                        switch (island.getMap().get(index)) {
                             case "~":
-                                id = 0;
+                                type = "water";
                                 color = "blue";
                                 break;
                             case ".":
-                                id = 1;
+                                type = "plane";
                                 color = "green";
                                 break;
                             case "^":
-                                id = 2;
+                                type = "mountain";
                                 color = "brown";
                                 break;
                             case "H":
-                                id = 3;
+                                type = "city";
                                 color = "gray";
                                 break;
                             default:
                                 break;
                         }
                    
-                        Tiles tile = new Tiles(id, color);
+                        Tiles tile = new Tiles(type, color);
                         
                         Button tileButton = tile.createTile();
                         tileButton.setOnAction(event->tile.onButtonPressed());
@@ -93,9 +141,9 @@ public class Main extends Application {
                         index++;
                     }
                 }
-                if(island.units!=null){
-                    for(int k = 0; k<island.units.size(); k++){
-                        var unit = island.units.get(k);
+                if(island.getUnits()!=null){
+                    for(int k = 0; k<island.getUnits().size(); k++){
+                        var unit = island.getUnits().get(k);
                         Tiles unitTile = tileGrid[unit.getY()][unit.getX()];
                         unitTile.alreadyInstalled(unit.getType());
 
@@ -103,11 +151,13 @@ public class Main extends Application {
                     }
                 
                 }
-                if(island.sites!=null){
-                    for(int k = 0; k<island.sites.size(); k++){
-                        var site = island.sites.get(k);
+                if(island.getSites()!=null){
+                    
+                    for(int k = 0; k<island.getSites().size(); k++){
+                        var site = island.getSites().get(k);
                         Tiles unitTile = tileGrid[site.getY()][site.getX()];
-                        unitTile.canInstall();
+                        unitTile.canInstall(island.getSites().get(k).getAllowed());
+                        unitTile.getButton().setOnAction(event -> unitTile.onTilePressed(site.getAllowed(), site, siteChosen, placementManager));
 
 
                     }

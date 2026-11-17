@@ -1,27 +1,39 @@
 package models;
-import javafx.scene.control.Button;
-public class Tiles {
-    public int type;
-    public String color;
-    public Button tileButton;
+import java.util.ArrayList;
 
-    public Tiles(int type, String color){
+import actions.Placements;
+import javafx.scene.control.Tooltip;
+import javafx.scene.control.Button;
+
+import javafx.scene.text.Text;
+public class Tiles {
+    String type;
+    String color;
+    Button tileButton;
+    Tooltip tooltip;
+
+    public Tiles(String type, String color){
         this.type = type;
         this.color = color;
     }
 
     public Button createTile(){
         this.tileButton = new Button();
-        this.tileButton.setPrefSize(25, 25);
-        this.tileButton.setMinSize(25, 25);
-        this.tileButton.setMaxSize(25, 25);
+        this.tileButton.setPrefSize(30, 30);
+        this.tileButton.setMinSize(30, 30);
+        this.tileButton.setMaxSize(30, 30);
         this.tileButton.setStyle("-fx-background-color:" + color + "; -fx-border-color: black; -fx-border-width: 0.5;");
-        return  this.tileButton;
+        this.tooltip = new Tooltip(this.type);
+        // 2. Το βάζουμε πάνω στο κουμπί
+        this.tileButton.setTooltip(this.tooltip);
+        return this.tileButton;
     }
 
     public void onButtonPressed(){
         System.out.println(type);
     }
+
+
 
     public void alreadyInstalled(String unitType){
         switch (unitType) {
@@ -34,10 +46,11 @@ public class Tiles {
             default:
                 break;
         }
+        this.tooltip.setText(this.tooltip.getText() + " " + unitType);
     }
 
 
-    public void canInstall(){
+    public void canInstall(ArrayList<String> allowed){
         String newColor = "White";
         
         if (this.color.equals("green")) {
@@ -53,10 +66,39 @@ public class Tiles {
             newColor = "cyan";
         }
         this.tileButton.setStyle("-fx-background-color:" + newColor + "; -fx-border-color: black; -fx-border-width: 0.5;");
+        this.tooltip.setText(this.tooltip.getText() + " " + allowed.toString());
     }
 
+ 
+    public void onTilePressed(ArrayList<String> allowed, Site site, Text text, Placements place){
+        if(allowed!=null){
+            
+            place.pickSite(site, text);
+            if(place.place()){
+                String generatorType = place.getHashMap().get(site).getType();
+                switch (generatorType) {
+                       case "PV":
+                            this.tileButton.setText("P");
+                            
+                            break;
+                        case "WIND":
+                            this.tileButton.setText("W");
+                            break;
+                        case "BATTERY":
+                            this.tileButton.setText("B");
+                            break;
+                        default:
+                            break;
+                }
 
+            }
+            
+        }
+    }
 
+    public Button getButton(){
+        return tileButton;
+    }
 
 
 }

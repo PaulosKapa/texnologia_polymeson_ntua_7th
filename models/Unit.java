@@ -15,6 +15,10 @@ public class Unit {
         this.x = x;
         this.y = y;
                 }
+
+        public String getId(){
+        return id;
+        }
         public int getX(){
                 return x;
         }

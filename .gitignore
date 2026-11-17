@@ -1,2 +1,4 @@
 *.so
 *.jar
+lib/
+*.dll
