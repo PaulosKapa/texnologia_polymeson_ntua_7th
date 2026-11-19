@@ -1,5 +1,5 @@
 package models;
-
+//κλάση για φόρτωση των μονάδων
 public class Unit {
     String id;
     String type;

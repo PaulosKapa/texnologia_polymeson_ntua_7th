@@ -1,5 +1,5 @@
 package models;
-
+//κλάση για φόρτωση των πηγών ενέργειας (τις παραμέτρους τις πάιρνει από το UnitsLoader)
 public class Item {
     String id;
     String type;
@@ -34,4 +34,7 @@ public class Item {
     public int getLife(){
         return life;
     }
+    public String getDetails() {
+        return "\nID: " + getId() + "\nCapex: " + getCapex() + "\nSize: " + getSize() + "\nLife: " + getLife();
+}
 }

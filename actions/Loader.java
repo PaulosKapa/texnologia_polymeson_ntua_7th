@@ -12,10 +12,12 @@ import models.Island;
 import models.Site;
 import models.Unit;
 
+//κλάση για να διαχειριστεί την φόρτωση του αρχείου island.json
 public class Loader {
     public static Island loadMap(String filePath) throws Exception{
         String content;
         try{
+            //βρίσκει το περιεχόμενο του αρχείου και το μετατρέπει σε string
             content = new String(Files.readAllBytes((Paths.get(filePath))));
 
         }
@@ -24,6 +26,7 @@ public class Loader {
         }
         JSONObject json;
         try{
+            //φτιάχνει καιούριο json αντικείμενο από το περιεχόμενο του αρχείου
             json = new JSONObject(content);
         }
         catch(JSONException e){
@@ -31,12 +34,13 @@ public class Loader {
         }
 
         try{
+            //οι μεταβλητές για το νησί που περιέχει το αρχείο island.json
             String name = json.getString("name");
             int width = json.getInt("width");
             int height = json.getInt("height");
             double budget = json.getDouble("budget");
 
-            
+            //δημιουργούμε μια λίστα να περιέχει όλα τα σημεία του χάρτη, με την πληροφορία του εδάφους τους.
             JSONArray mapArray = json.getJSONArray("map");
             if(mapArray.length() != height){
                 throw new EOFException("Number of line error");
@@ -54,6 +58,7 @@ public class Loader {
                 }
             }
             
+            //μία λίστα που περιέχει όλες τις ήδη εκατεστημένες περιοχές και τις πληροφοριές τους
             JSONArray units = json.getJSONArray("units");
             ArrayList<Unit> unitObjects = new ArrayList<Unit>();
             for(int i = 0; i<units.length(); i++){
@@ -64,6 +69,7 @@ public class Loader {
                 int y = unit.getInt("y");
                 unitObjects.add(new Unit(id, type, x, y));
             }
+            //λίστα που περιέχει τα κομμάτια του νησιού που μπορούν να εγκαταστηθούν οι διαθέσιμες πηγές ενέργειας.
             JSONArray sites = json.getJSONArray("sites");
             ArrayList<Site> siteObjects = new ArrayList<Site>();
             for(int i = 0; i<sites.length(); i++){
@@ -71,6 +77,7 @@ public class Loader {
                 String id = site.getString("id");
                 int x = site.getInt("x");
                 int y = site.getInt("y");
+                //μια λίστα με το τι πηγή ενέργειας επιτρέπεται σε κάθε περιοχή
                 JSONArray allowedArray = site.getJSONArray("allowed");
                 ArrayList<String> allowedItems = new ArrayList<>();
                 for(int j = 0; j<allowedArray.length(); j++){
@@ -83,6 +90,7 @@ public class Loader {
         }
         catch(JSONException e){
                 throw new Exception("JSOn file error");
+                
             }
     }
 }

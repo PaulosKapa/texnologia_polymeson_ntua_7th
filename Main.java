@@ -20,66 +20,72 @@ import actions.UnitsLoader;
 import javafx.stage.FileChooser;
 
 import models.Item;
-
+//κύρια κλάση του προγράματος
 public class Main extends Application {
 
     @Override
     public void start(Stage stage) {
-        
-        Button loadButton = new Button("load");
-        Text budget = new Text("0");
+        //απαιτούμενο ui
+        Text info = new Text("Click load to start. Select a resource button and then an appropriate tile to build. Hover over tiles to inspect them. Press that resource button again to remove the building");
+        Button loadButton = new Button("Load Island.JSON");
+        Text budget = new Text("Budget: ");
+        Text name = new Text("Name: ");
         ArrayList<Text> labels = new ArrayList<Text>();
         Text siteChosen = new Text("Site: ");
         Text itemChosen = new Text("Item: ");
         labels.add(budget);
         labels.add(siteChosen);
         labels.add(itemChosen);
+        labels.add(name);
 
-        // ΝΕΟ: Ένα οριζόντιο κουτί για τα αντικείμενα του καταλόγου
-        HBox inventoryBox = new HBox(10); // 10 pixels κενό ανάμεσα στα κουμπιά
+        //δημιουργία κουτιού για τις πηγές ενέργειας
+        HBox inventoryBox = new HBox(10); 
         inventoryBox.setAlignment(Pos.CENTER);
 
 
-      // Φτιάχνουμε ένα ξεχωριστό πλέγμα ΜΟΝΟ για τον χάρτη
+        //δημιουργία πλέγματος για το χάρτη
         GridPane mapGrid = new GridPane();
         mapGrid.setAlignment(Pos.CENTER);
-        mapGrid.setVgap(1); // Μικρό κενό μεταξύ των κελιών για να ξεχωρίζουν
+        mapGrid.setVgap(1);
         mapGrid.setHgap(1);
 
-        // Περνάμε το mapGrid στη μέθοδο loadFile
+        //μόλις πατηθεί το κουμπί που φορτώνει το αρχείο
         loadButton.setOnAction(event -> loadFile(stage, mapGrid, inventoryBox, labels));
 
-        // Χρησιμοποιούμε ένα VBox για να βάλουμε τα κουμπιά πάνω και τον χάρτη από κάτω
+        //δημιουργία χώρου που βρίσκεται το ui
         VBox root = new VBox(15); 
         root.setAlignment(Pos.CENTER);
         root.setPadding(new Insets(20));
 
         
-        // Προσθέτουμε τα στοιχεία στο κεντρικό VBox
-        root.getChildren().addAll(loadButton, mapGrid, inventoryBox);
+        
+        root.getChildren().addAll(info, loadButton, mapGrid, inventoryBox);
         root.getChildren().addAll(labels);
 
-        // Φτιάχνουμε τη Scene ΜΙΑ ΦΟΡΑ εδώ
-        Scene scene = new Scene(root, 800, 600);
+        //δημιουργία σκηνής
+        Scene scene = new Scene(root, 1280, 720);
 
-        stage.setTitle("MediaLab Energy Island");
+        stage.setTitle("Medialab Simulation");
         stage.setScene(scene);
         stage.show();
     }
-
+    //μέθοδοσ για φόρτωση του αρχείου
     private void loadFile(Stage stage, GridPane mapGrid, HBox inventoryBox, ArrayList<Text> labels) {
         FileChooser file = new FileChooser();
         File selectFile = file.showOpenDialog(stage);
         Placements placementManager = new Placements();
        
-
+        //αν υπάρχει αρχείο
         if (selectFile != null) {
             try {
+                //αυτόματη επιλογή του catalog.json
                 File inventoryFile = new File(selectFile.getParent(), "catalog.json");
+                //δημιουργία κλάσεων island και inventory
                 Island island = Loader.loadMap(selectFile.getAbsolutePath());
                 Inventory inventory = UnitsLoader.loadUnits(inventoryFile.getAbsolutePath());
-                // Καθαρίζουμε τον κατάλογο σε περίπτωση που φορτώσουμε 2ο αρχείο
+                //καθαρισμός εικόνας αν γίνει και δε΄λυτερο νησί
                 inventoryBox.getChildren().clear();
+                //δημιουργία κουμπιών για τις πηγές ενέργειας
                 for(int i =0; i<inventory.getInventory().size();i++){
                     Item item = inventory.getInventory().get(i);
                     String color = "black";
@@ -99,18 +105,23 @@ public class Main extends Application {
                         default:
                             break;
                     }
-                        InventoryTiles inventoryTile = new InventoryTiles(item.getType(), color);
-                        
+                    //δημιουργία των αντικειμένων
+                        InventoryTiles inventoryTile = new InventoryTiles(item, color);
+                        //δημιουργία κουτιών από αντικείμενα
                         Button tileButton = inventoryTile.createTile();
-                        tileButton.setOnAction(event->inventoryTile.onInventoryTilePressed(item, labels.get(2), placementManager));
+                        inventoryTile.information();
+                        //προσθήκη στις διαθέσιμες πηγές ενέργειας
+                        placementManager.registerInventoryTile(inventoryTile);
+                        tileButton.setOnAction(event->inventoryTile.onInventoryTilePressed(labels.get(2), placementManager));
 
                         inventoryBox.getChildren().add(tileButton);
                     }
                 
-                labels.get(0).setText(String.valueOf(island.getBudget()));
+                labels.get(0).setText("Budget: " + String.valueOf(island.getBudget()));
+                labels.get(3).setText("Name:" + String.valueOf(island.getBudget()));
                 int index = 0;
                 Tiles[][] tileGrid = new Tiles [island.getHeight()][island.getWidth()];
-                
+                //αλλαγή χρώματος για τους χώρους
                 for (int i = 0; i < island.getHeight(); i++) {
                     for (int j = 0; j < island.getWidth(); j++) {
                         String type = "null";
@@ -136,12 +147,12 @@ public class Main extends Application {
                             default:
                                 break;
                         }
-                   
+                        //δημιουργία αντικειμένων χώρων
                         Tiles tile = new Tiles(type, color);
-                        
+                        //δημιουργία κουμπιών
                         Button tileButton = tile.createTile();
                         tileButton.setOnAction(event->tile.onButtonPressed());
-
+                        //προσθήκη κουμπιού στο χάρτη
                         mapGrid.add(tileButton, j, i);
                         tileGrid[i][j] = tile;
                         
@@ -149,6 +160,7 @@ public class Main extends Application {
                     }
                 }
                 if(island.getUnits()!=null){
+                    //προσθήση των χώρων που είναι διαθέσιμοι για εγκατάσταση
                     for(int k = 0; k<island.getUnits().size(); k++){
                         var unit = island.getUnits().get(k);
                         Tiles unitTile = tileGrid[unit.getY()][unit.getX()];
@@ -159,7 +171,7 @@ public class Main extends Application {
                 
                 }
                 if(island.getSites()!=null){
-                    
+                    //προσθήκη ήδη υπάρχοντων πηγών/φορτίων
                     for(int k = 0; k<island.getSites().size(); k++){
                         var site = island.getSites().get(k);
                         Tiles unitTile = tileGrid[site.getY()][site.getX()];
@@ -171,11 +183,19 @@ public class Main extends Application {
             }
         } 
             catch (Exception e) {
-                System.err.println("error loading file");
+                showError(e.getMessage());
             }
 
         }
 
+    }
+    //για να εμφανιστούν τα error σαν popup
+    public static void showError(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Σφάλμα");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     public static void main(String[] args) {

@@ -1,7 +1,7 @@
 package models;
 
 import java.util.ArrayList;
-
+//κλάση για φόρτωση του νησιού (τις παραμέτρους τις παίρνει από το loader.java)
 public class Island {
     String name;
     int width;

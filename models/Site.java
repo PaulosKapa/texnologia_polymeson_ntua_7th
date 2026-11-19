@@ -1,7 +1,7 @@
 package models;
 
 import java.util.ArrayList;
-
+//κλάση για φόρτωση των χώρων του νησιού
 public class Site {
         String id;
         int x;
