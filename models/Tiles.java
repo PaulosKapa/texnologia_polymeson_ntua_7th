@@ -19,9 +19,9 @@ public class Tiles {
 
     public Button createTile(){
         this.tileButton = new Button();
-        this.tileButton.setPrefSize(30, 30);
-        this.tileButton.setMinSize(30, 30);
-        this.tileButton.setMaxSize(30, 30);
+        this.tileButton.setPrefSize(40, 40);
+        this.tileButton.setMinSize(40, 40);
+        this.tileButton.setMaxSize(40, 40);
         this.tileButton.setStyle("-fx-background-color:" + color + "; -fx-border-color: black; -fx-border-width: 0.5;");
         this.tooltip = new Tooltip(this.type);
         // 2. Το βάζουμε πάνω στο κουμπί
@@ -48,7 +48,7 @@ public class Tiles {
         }
         this.tooltip.setText(this.tooltip.getText() + " " + unitType);
     }
-
+   
 
     public void canInstall(ArrayList<String> allowed){
         String newColor = "White";

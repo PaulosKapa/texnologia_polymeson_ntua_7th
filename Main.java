@@ -11,6 +11,7 @@ import models.Island;
 import models.Tiles;
 import javafx.scene.text.Text;
 import java.io.File;
+import java.util.ArrayList;
 
 import actions.Inventory;
 import actions.Loader;
@@ -27,8 +28,12 @@ public class Main extends Application {
         
         Button loadButton = new Button("load");
         Text budget = new Text("0");
+        ArrayList<Text> labels = new ArrayList<Text>();
         Text siteChosen = new Text("Site: ");
         Text itemChosen = new Text("Item: ");
+        labels.add(budget);
+        labels.add(siteChosen);
+        labels.add(itemChosen);
 
         // ΝΕΟ: Ένα οριζόντιο κουτί για τα αντικείμενα του καταλόγου
         HBox inventoryBox = new HBox(10); // 10 pixels κενό ανάμεσα στα κουμπιά
@@ -42,15 +47,17 @@ public class Main extends Application {
         mapGrid.setHgap(1);
 
         // Περνάμε το mapGrid στη μέθοδο loadFile
-        loadButton.setOnAction(event -> loadFile(stage, budget, mapGrid, inventoryBox, siteChosen, itemChosen));
+        loadButton.setOnAction(event -> loadFile(stage, mapGrid, inventoryBox, labels));
 
         // Χρησιμοποιούμε ένα VBox για να βάλουμε τα κουμπιά πάνω και τον χάρτη από κάτω
         VBox root = new VBox(15); 
         root.setAlignment(Pos.CENTER);
         root.setPadding(new Insets(20));
+
         
         // Προσθέτουμε τα στοιχεία στο κεντρικό VBox
-        root.getChildren().addAll(loadButton, budget, mapGrid, inventoryBox, siteChosen, itemChosen);
+        root.getChildren().addAll(loadButton, mapGrid, inventoryBox);
+        root.getChildren().addAll(labels);
 
         // Φτιάχνουμε τη Scene ΜΙΑ ΦΟΡΑ εδώ
         Scene scene = new Scene(root, 800, 600);
@@ -60,7 +67,7 @@ public class Main extends Application {
         stage.show();
     }
 
-    private void loadFile(Stage stage, Text budget, GridPane mapGrid, HBox inventoryBox, Text siteChosen, Text itemChosen) {
+    private void loadFile(Stage stage, GridPane mapGrid, HBox inventoryBox, ArrayList<Text> labels) {
         FileChooser file = new FileChooser();
         File selectFile = file.showOpenDialog(stage);
         Placements placementManager = new Placements();
@@ -95,12 +102,12 @@ public class Main extends Application {
                         InventoryTiles inventoryTile = new InventoryTiles(item.getType(), color);
                         
                         Button tileButton = inventoryTile.createTile();
-                        tileButton.setOnAction(event->inventoryTile.onInventoryTilePressed(item, itemChosen, placementManager));
+                        tileButton.setOnAction(event->inventoryTile.onInventoryTilePressed(item, labels.get(2), placementManager));
 
                         inventoryBox.getChildren().add(tileButton);
                     }
                 
-                budget.setText(String.valueOf(island.getBudget()));
+                labels.get(0).setText(String.valueOf(island.getBudget()));
                 int index = 0;
                 Tiles[][] tileGrid = new Tiles [island.getHeight()][island.getWidth()];
                 
@@ -157,7 +164,7 @@ public class Main extends Application {
                         var site = island.getSites().get(k);
                         Tiles unitTile = tileGrid[site.getY()][site.getX()];
                         unitTile.canInstall(island.getSites().get(k).getAllowed());
-                        unitTile.getButton().setOnAction(event -> unitTile.onTilePressed(site.getAllowed(), site, siteChosen, placementManager));
+                        unitTile.getButton().setOnAction(event -> unitTile.onTilePressed(site.getAllowed(), site, labels.get(1), placementManager));
 
 
                     }

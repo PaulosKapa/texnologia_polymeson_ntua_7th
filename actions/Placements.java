@@ -37,13 +37,19 @@ public class Placements {
             return false;
         }
         if (this.site.getAllowed().contains(this.item.getType())) {
+            if(this.placements.get(this.site)!=null){
+                this.placements.remove(this.site);
 
+            }
             this.placements.put(this.site, this.item);
+            
             this.site = null;
             this.item = null;
 
             if(currentSiteText != null) currentSiteText.setText("Site: ");
             if(currentItemText != null) currentItemText.setText("Item: ");
+          
+
             return true;
         } else {
             if(currentSiteText != null) currentSiteText.setText("Site: ");
